@@ -50,6 +50,7 @@ export function ProductMap({
   activeStoreFilter, onExitStore, isMobile,
 }) {
   const containerRef = useRef(null);
+  const controlBarRef = useRef(null);
   const {
     offset, scale, isDragging,
     handleMouseDown, handleMouseMove, handleMouseUp,
@@ -91,12 +92,30 @@ export function ProductMap({
     const el = containerRef.current;
     if (!el) return;
     el.addEventListener('wheel', handleWheel, { passive: false });
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
     el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: true });
     return () => {
       el.removeEventListener('wheel', handleWheel);
+      el.removeEventListener('touchstart', handleTouchStart);
       el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [handleWheel, handleTouchMove]);
+  }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd]);
+
+  useEffect(() => {
+    const bar = controlBarRef.current;
+    if (!bar) return;
+    const stop = (e) => e.stopPropagation();
+    bar.addEventListener('touchstart', stop, { passive: true });
+    bar.addEventListener('touchmove', stop, { passive: true });
+    bar.addEventListener('touchend', stop, { passive: true });
+    return () => {
+      bar.removeEventListener('touchstart', stop);
+      bar.removeEventListener('touchmove', stop);
+      bar.removeEventListener('touchend', stop);
+    };
+  }, []);
 
   const isProductFaded = (product) => {
     const q = searchQuery.trim().toLowerCase();
@@ -116,8 +135,6 @@ export function ProductMap({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
       onClick={(e) => {
         if (e.target === containerRef.current) {
           onSelectProduct(null);
@@ -128,6 +145,7 @@ export function ProductMap({
         flex: 1, overflow: 'hidden',
         cursor: isDragging ? 'grabbing' : 'grab',
         position: 'relative',
+        touchAction: 'none',
         backgroundImage: `
           radial-gradient(ellipse at 20% 30%, rgba(236,176,255,0.25) 0%, transparent 55%),
           radial-gradient(ellipse at 80% 70%, rgba(196,181,253,0.2) 0%, transparent 50%),
@@ -188,8 +206,8 @@ export function ProductMap({
 
       {/* コントロールバー */}
       <div
+        ref={controlBarRef}
         onMouseDown={(e) => e.stopPropagation()}
-        onTouchStart={(e) => e.stopPropagation()}
         style={{
           position: 'absolute',
           bottom: isMobile ? 16 : 20,
@@ -210,7 +228,7 @@ export function ProductMap({
         }}>
         <span style={{ fontSize: isMobile ? 16 : 13, userSelect: 'none' }}>🔍</span>
         <input type="range" min={SCALE_MIN} max={SCALE_MAX} step="0.05" value={scale}
-          onChange={(e) => handleSliderZoom(e.target.value)}
+          onChange={(e) => handleSliderZoom(e.target.value, containerRef.current)}
           style={{ width: isMobile ? 68 : 100, accentColor: '#a855f7', cursor: 'pointer', height: isMobile ? 20 : undefined }} />
         <span style={{ fontSize: 11, color: '#7c3aed', fontWeight: 700, minWidth: isMobile ? 30 : 38 }}>
           {Math.round(scale * 100)}%

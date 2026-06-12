@@ -67,7 +67,6 @@ function StoreGridCard({ store, onEnterStore, isMobile }) {
       onClick={() => onEnterStore(store)}
       style={{
         borderRadius: 16,
-        overflow: 'hidden',
         cursor: 'pointer',
         boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
         background: '#fff',
@@ -125,10 +124,7 @@ function StoreGridCard({ store, onEnterStore, isMobile }) {
           fontSize: isMobile ? 10.5 : 11.5,
           color: '#888',
           lineHeight: 1.6,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
+          overflow: 'visible',
         }}>
           {store.description}
         </div>

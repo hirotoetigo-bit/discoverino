@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export function useProductMap() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -14,8 +14,8 @@ export function useProductMap() {
     if (e.button !== 0) return;
     setIsDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY };
-    lastOffset.current = offset;
-  }, [offset]);
+    lastOffset.current = offsetRef.current;
+  }, []);
 
   const handleMouseMove = useCallback((e) => {
     if (!isDragging || !dragStart.current) return;
@@ -57,7 +57,7 @@ export function useProductMap() {
     if (e.touches.length === 1) {
       setIsDragging(true);
       dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      lastOffset.current = offset;
+      lastOffset.current = offsetRef.current;
     } else if (e.touches.length === 2) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -68,7 +68,7 @@ export function useProductMap() {
       };
       setIsDragging(false);
     }
-  }, [offset]);
+  }, []);
 
   const handleTouchMove = useCallback((e) => {
     e.preventDefault();
@@ -110,8 +110,22 @@ export function useProductMap() {
     lastTouchDist.current = null;
   }, []);
 
-  const handleSliderZoom = useCallback((value) => {
-    setScale(clampScale(parseFloat(value)));
+  const handleSliderZoom = useCallback((value, containerEl) => {
+    const newScale = clampScale(parseFloat(value));
+    const prevScale = scaleRef.current;
+    if (!containerEl || prevScale === newScale) {
+      setScale(newScale);
+      return;
+    }
+    const rect = containerEl.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const { x: ox, y: oy } = offsetRef.current;
+    setOffset({
+      x: cx - (cx - ox) * (newScale / prevScale),
+      y: cy - (cy - oy) * (newScale / prevScale),
+    });
+    setScale(newScale);
   }, []);
 
   // スライダー範囲も 0.5〜2.0 に合わせるため外部に公開
