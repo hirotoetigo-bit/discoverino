@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { products } from '../data/products';
 
-export function StoreDetailPanel({ store, isFavorite, onToggleFavorite, onClose, onEnter }) {
+export function StoreDetailPanel({ store, isFavorite, onToggleFavorite, onClose, onEnter, isMobile }) {
   const [imgError, setImgError] = useState(false);
   const [entered, setEntered] = useState(false);
 
@@ -16,6 +16,14 @@ export function StoreDetailPanel({ store, isFavorite, onToggleFavorite, onClose,
     }, 800);
   };
 
+  const mobileStyle = isMobile ? {
+    top: 'auto', bottom: 0, left: 0, right: 0,
+    width: '100%', height: '85vh',
+    borderRadius: '20px 20px 0 0',
+    boxShadow: '0 -8px 48px rgba(168,85,247,0.18)',
+    animation: 'panelSlideUp 0.28s cubic-bezier(0.22,1,0.36,1)',
+  } : {};
+
   return (
     <div
       style={{
@@ -25,8 +33,9 @@ export function StoreDetailPanel({ store, isFavorite, onToggleFavorite, onClose,
         backdropFilter: 'blur(20px)',
         boxShadow: '-8px 0 48px rgba(168,85,247,0.12)',
         display: 'flex', flexDirection: 'column',
-        zIndex: 100,
+        zIndex: 200,
         animation: 'panelSlideIn 0.28s cubic-bezier(0.22,1,0.36,1)',
+        ...mobileStyle,
       }}
     >
       <style>{`
@@ -34,7 +43,17 @@ export function StoreDetailPanel({ store, isFavorite, onToggleFavorite, onClose,
           from { transform: translateX(100%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }
         }
+        @keyframes panelSlideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
       `}</style>
+      {isMobile && (
+        <div style={{
+          width: 40, height: 4, background: 'rgba(0,0,0,0.15)',
+          borderRadius: 2, margin: '10px auto 0', flexShrink: 0,
+        }} />
+      )}
 
       {/* 店舗画像（トップ全幅） */}
       <div style={{ position: 'relative', width: '100%', height: 200, flexShrink: 0, overflow: 'hidden', background: store.gradient }}>

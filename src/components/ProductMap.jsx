@@ -47,6 +47,7 @@ export function ProductMap({
   selectedProduct, favorites, onSelectProduct, onToggleFavorite,
   budget, onBudgetChange, searchQuery,
   selectedStore, storeFavorites, onSelectStore, onToggleStoreFavorite, onEnterStore,
+  activeStoreFilter, onExitStore, isMobile,
 }) {
   const containerRef = useRef(null);
   const {
@@ -61,16 +62,30 @@ export function ProductMap({
   const isGridMode = !isStoreMode && scale < GRID_THRESHOLD;
   const isDetailMode = !isStoreMode && scale >= DETAIL_THRESHOLD;
 
-  const gridProducts = useMemo(() => computeGridLayout(rawProducts), []);
-  const products = isGridMode ? gridProducts : layoutProducts;
+  // 入店フィルター適用済みレイアウト（storeIdが変わった時だけ再計算）
+  const filteredLayout = useMemo(() => {
+    const storeId = activeStoreFilter?.id ?? null;
+    const subset = storeId
+      ? rawProducts.filter((p) => p.storeId === storeId)
+      : rawProducts;
+    const { products: pts, canvasW: cW, canvasH: cH } = computeLayout(subset);
+    const grid = computeGridLayout(subset);
+    const COLS = 12;
+    const CELL_W = 180; const CELL_H = 192;
+    return {
+      random: pts,
+      grid,
+      canvasW: cW,
+      canvasH: cH,
+      gridCanvasW: COLS * CELL_W + 40,
+      gridCanvasH: Math.ceil(subset.length / COLS) * CELL_H + 40,
+    };
+  }, [activeStoreFilter?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const COLS = 12;
-  const CELL_W = 180; const CELL_H = 192;
-  const gridCanvasW = COLS * CELL_W + 40;
-  const gridCanvasH = Math.ceil(rawProducts.length / COLS) * CELL_H + 40;
+  const products = isGridMode ? filteredLayout.grid : filteredLayout.random;
 
-  const canvasW = isStoreMode ? storeCanvasW : isGridMode ? gridCanvasW : randomCanvasW;
-  const canvasH = isStoreMode ? storeCanvasH : isGridMode ? gridCanvasH : randomCanvasH;
+  const canvasW = isStoreMode ? storeCanvasW : isGridMode ? filteredLayout.gridCanvasW : filteredLayout.canvasW;
+  const canvasH = isStoreMode ? storeCanvasH : isGridMode ? filteredLayout.gridCanvasH : filteredLayout.canvasH;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -123,10 +138,40 @@ export function ProductMap({
         backgroundColor: '#fdfaff',
       }}
     >
+      {/* 入店中バナー */}
+      {activeStoreFilter && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 60,
+          background: 'linear-gradient(135deg, #1a1a2e, #2d1b69)',
+          padding: '10px 18px',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <button
+            onClick={onExitStore}
+            style={{
+              background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 20,
+              color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 12px',
+              cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4,
+            }}
+          >
+            ← 全商品に戻る
+          </button>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>
+            {activeStoreFilter.name}
+          </span>
+          <span style={{
+            fontSize: 10, color: 'rgba(255,255,255,0.6)',
+            background: 'rgba(255,255,255,0.1)', borderRadius: 20, padding: '2px 8px',
+          }}>
+            入店中
+          </span>
+        </div>
+      )}
+
       {/* モードバッジ */}
       {isGridMode && (
         <div style={{
-          position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', top: activeStoreFilter ? 54 : 14, left: '50%', transform: 'translateX(-50%)',
           zIndex: 50, background: 'rgba(124,58,237,0.9)', backdropFilter: 'blur(8px)',
           borderRadius: 20, padding: '5px 14px', fontSize: 11, fontWeight: 700,
           color: '#fff', letterSpacing: '0.04em', pointerEvents: 'none',
@@ -134,7 +179,7 @@ export function ProductMap({
       )}
       {isDetailMode && (
         <div style={{
-          position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', top: activeStoreFilter ? 54 : 14, left: '50%', transform: 'translateX(-50%)',
           zIndex: 50, background: 'rgba(168,85,247,0.9)', backdropFilter: 'blur(8px)',
           borderRadius: 20, padding: '5px 14px', fontSize: 11, fontWeight: 700,
           color: '#fff', letterSpacing: '0.04em', pointerEvents: 'none',
@@ -144,29 +189,41 @@ export function ProductMap({
       {/* コントロールバー */}
       <div
         onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         style={{
-        position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
-        zIndex: 50, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(10px)',
-        borderRadius: 28, padding: '9px 18px', display: 'flex', alignItems: 'center', gap: 16,
-        boxShadow: '0 4px 20px rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.1)',
-        whiteSpace: 'nowrap',
-      }}>
-        <span style={{ fontSize: 13, userSelect: 'none' }}>🔍</span>
+          position: 'absolute',
+          bottom: isMobile ? 16 : 20,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 50,
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: 28,
+          padding: isMobile ? '10px 16px' : '9px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: isMobile ? 10 : 16,
+          boxShadow: '0 4px 20px rgba(168,85,247,0.15)',
+          border: '1px solid rgba(168,85,247,0.1)',
+          whiteSpace: 'nowrap',
+          maxWidth: isMobile ? 'calc(100vw - 32px)' : 'none',
+        }}>
+        <span style={{ fontSize: isMobile ? 16 : 13, userSelect: 'none' }}>🔍</span>
         <input type="range" min={SCALE_MIN} max={SCALE_MAX} step="0.05" value={scale}
           onChange={(e) => handleSliderZoom(e.target.value)}
-          style={{ width: 100, accentColor: '#a855f7', cursor: 'pointer' }} />
-        <span style={{ fontSize: 11, color: '#7c3aed', fontWeight: 700, minWidth: 38 }}>
+          style={{ width: isMobile ? 68 : 100, accentColor: '#a855f7', cursor: 'pointer', height: isMobile ? 20 : undefined }} />
+        <span style={{ fontSize: 11, color: '#7c3aed', fontWeight: 700, minWidth: isMobile ? 30 : 38 }}>
           {Math.round(scale * 100)}%
         </span>
 
         {!isStoreMode && (
           <>
             <div style={{ width: 1, height: 18, background: 'rgba(0,0,0,0.1)' }} />
-            <span style={{ fontSize: 13, userSelect: 'none' }}>💰</span>
+            <span style={{ fontSize: isMobile ? 16 : 13, userSelect: 'none' }}>💰</span>
             <input type="range" min="3000" max="80000" step="1000" value={budget}
               onChange={(e) => onBudgetChange(Number(e.target.value))}
-              style={{ width: 110, accentColor: '#ec4899', cursor: 'pointer' }} />
-            <span style={{ fontSize: 11, color: '#ec4899', fontWeight: 700, minWidth: 56 }}>
+              style={{ width: isMobile ? 68 : 110, accentColor: '#ec4899', cursor: 'pointer', height: isMobile ? 20 : undefined }} />
+            <span style={{ fontSize: 11, color: '#ec4899', fontWeight: 700, minWidth: isMobile ? 46 : 56 }}>
               ¥{Number(budget).toLocaleString()}まで
             </span>
           </>

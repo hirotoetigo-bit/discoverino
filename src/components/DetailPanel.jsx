@@ -21,10 +21,23 @@ const SUGGEST_INTERESTS = [
   'ファッション', 'アート・デザイン', 'キッチン',
 ];
 
-export function DetailPanel({ product, favorites, userInterests, onToggleFavorite, onClose }) {
+export function DetailPanel({ product, favorites, userInterests, onToggleFavorite, onClose, isMobile }) {
   const [imgError, setImgError] = useState(false);
   const isFav = favorites.has(product.id);
   const store = stores.find((s) => s.id === product.storeId);
+
+  const mobileStyle = isMobile ? {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    top: 'auto',
+    width: '100%',
+    height: '85vh',
+    borderRadius: '20px 20px 0 0',
+    boxShadow: '0 -8px 48px rgba(168,85,247,0.18)',
+    animation: 'panelSlideUp 0.28s cubic-bezier(0.22,1,0.36,1)',
+  } : {};
 
   return (
     <div
@@ -39,8 +52,9 @@ export function DetailPanel({ product, favorites, userInterests, onToggleFavorit
         boxShadow: '-8px 0 48px rgba(168,85,247,0.12)',
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 100,
+        zIndex: 200,
         animation: 'panelSlideIn 0.28s cubic-bezier(0.22,1,0.36,1)',
+        ...mobileStyle,
       }}
     >
       <style>{`
@@ -48,7 +62,17 @@ export function DetailPanel({ product, favorites, userInterests, onToggleFavorit
           from { transform: translateX(100%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }
         }
+        @keyframes panelSlideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
       `}</style>
+      {isMobile && (
+        <div style={{
+          width: 40, height: 4, background: 'rgba(0,0,0,0.15)',
+          borderRadius: 2, margin: '10px auto 0', flexShrink: 0,
+        }} />
+      )}
 
       {/* 商品画像（トップ全幅） */}
       <div

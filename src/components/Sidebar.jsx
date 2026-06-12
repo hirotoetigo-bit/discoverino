@@ -153,44 +153,6 @@ export function Sidebar({ activePage, favoritesCount, onNavigate, onReset }) {
 
       {/* ユーザー + リセット */}
       <div style={{ padding: '14px 14px 22px' }}>
-        {/* ユーザー情報 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '10px 12px',
-            background: 'rgba(168,85,247,0.04)',
-            borderRadius: 12,
-            marginBottom: 10,
-          }}
-        >
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #f9a8d4, #c084fc)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 16,
-              flexShrink: 0,
-              overflow: 'hidden',
-            }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=68&h=68&fit=crop&q=80"
-              alt="user"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-          </div>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#1a1a2e' }}>Haruka</div>
-          </div>
-        </div>
-
         {/* リセットボタン */}
         <button
           onClick={onReset}

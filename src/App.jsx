@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
+import { BottomNav } from './components/BottomNav';
 import { Header } from './components/Header';
 import { ProductMap } from './components/ProductMap';
 import { DetailPanel } from './components/DetailPanel';
@@ -7,10 +8,12 @@ import { StoreDetailPanel } from './components/StoreDetailPanel';
 import { StoreBanner } from './components/StoreBanner';
 import { DeliveryStory } from './components/DeliveryStory';
 import { Onboarding } from './components/Onboarding';
+import { useIsMobile } from './hooks/useIsMobile';
 
 const FONT_STACK = "'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', sans-serif";
 
 export default function App() {
+  const isMobile = useIsMobile();
   const [showOnboarding] = useState(() => !localStorage.getItem('discoverino_onboarding'));
   const [onboardingDone, setOnboardingDone] = useState(!showOnboarding);
 
@@ -28,6 +31,9 @@ export default function App() {
   // 店舗モード用状態
   const [selectedStore, setSelectedStore] = useState(null);
   const [storeFavorites, setStoreFavorites] = useState(new Set());
+
+  // 入店フィルター（探索モードでお店に入ったとき、そのstoreIdだけ表示）
+  const [activeStoreFilter, setActiveStoreFilter] = useState(null); // { id, name } | null
 
   const handleOnboardingComplete = (interests, mood) => {
     localStorage.setItem('discoverino_onboarding', 'complete');
@@ -61,6 +67,7 @@ export default function App() {
     setStoreFavorites(new Set());
     setSelectedProduct(null);
     setSelectedStore(null);
+    setActiveStoreFilter(null);
     setSearchQuery('');
     setBudget(25000);
     window.location.reload();
@@ -68,6 +75,7 @@ export default function App() {
 
   const handleNavigate = (page) => {
     setActivePage(page);
+    setActiveStoreFilter(null);
     if (page !== 'explore' && page !== 'store') {
       setSelectedProduct(null);
       setSelectedStore(null);
@@ -76,11 +84,12 @@ export default function App() {
     if (page === 'store') setSelectedProduct(null);
   };
 
-  // 店舗に「入店」→探索モードに切り替え（その店舗の商品を表示）
+  // 店舗に「入店」→探索モードに切り替え（その店舗の商品だけ表示）
   const handleEnterStore = (store) => {
     setSelectedStore(null);
+    setSelectedProduct(null);
     setActivePage('explore');
-    setSearchQuery(store.name);
+    setActiveStoreFilter({ id: store.id, name: store.name });
   };
 
   const handleSelectStore = (store) => {
@@ -104,20 +113,26 @@ export default function App() {
       fontFamily: FONT_STACK, overflow: 'hidden',
       background: 'linear-gradient(135deg, #fdf2f8 0%, #f5f0ff 40%, #ede9fe 70%, #f0f7ff 100%)',
     }}>
-      <Sidebar
-        activePage={activePage}
-        favoritesCount={favorites.size}
-        onNavigate={handleNavigate}
-        onReset={handleReset}
-      />
+      {!isMobile && (
+        <Sidebar
+          activePage={activePage}
+          favoritesCount={favorites.size}
+          onNavigate={handleNavigate}
+          onReset={handleReset}
+        />
+      )}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0,
+        paddingBottom: isMobile ? 64 : 0,
+      }}>
         <Header
           activePage={activePage}
           searchQuery={searchQuery}
           budget={budget}
           onSearch={setSearchQuery}
           onNavigate={handleNavigate}
+          isMobile={isMobile}
         />
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
@@ -139,8 +154,13 @@ export default function App() {
                 onSelectStore={handleSelectStore}
                 onToggleStoreFavorite={toggleStoreFavorite}
                 onEnterStore={handleEnterStore}
+                activeStoreFilter={activeStoreFilter}
+                onExitStore={() => setActiveStoreFilter(null)}
+                isMobile={isMobile}
               />
-              {activePage === 'explore' && <StoreBanner onEnterStore={handleEnterStore} />}
+              {activePage === 'explore' && !activeStoreFilter && (
+                <StoreBanner onEnterStore={handleEnterStore} isMobile={isMobile} />
+              )}
             </div>
           ) : (
             <PlaceholderPage page={activePage} />
@@ -154,6 +174,7 @@ export default function App() {
               userInterests={userInterests}
               onToggleFavorite={toggleFavorite}
               onClose={() => setSelectedProduct(null)}
+              isMobile={isMobile}
             />
           )}
 
@@ -165,10 +186,19 @@ export default function App() {
               onToggleFavorite={toggleStoreFavorite}
               onClose={() => setSelectedStore(null)}
               onEnter={handleEnterStore}
+              isMobile={isMobile}
             />
           )}
         </div>
       </div>
+
+      {isMobile && (
+        <BottomNav
+          activePage={activePage}
+          favoritesCount={favorites.size}
+          onNavigate={handleNavigate}
+        />
+      )}
     </div>
   );
 }

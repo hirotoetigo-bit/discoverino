@@ -3,7 +3,7 @@ import { stores } from '../data/stores';
 
 const DOUBLE_TAP_MS = 350;
 
-export function StoreBanner({ onEnterStore }) {
+export function StoreBanner({ onEnterStore, isMobile }) {
   const scrollRef = useRef(null);
 
   return (
@@ -13,7 +13,7 @@ export function StoreBanner({ onEnterStore }) {
         background: 'rgba(255,255,255,0.8)',
         backdropFilter: 'blur(12px)',
         borderTop: '1px solid rgba(168,85,247,0.08)',
-        padding: '14px 22px 16px',
+        padding: isMobile ? '12px 16px 14px' : '14px 22px 16px',
       }}
     >
       <div

@@ -1,4 +1,54 @@
-export function Header({ activePage, searchQuery, budget, onSearch, onNavigate }) {
+export function Header({ activePage, searchQuery, budget, onSearch, onNavigate, isMobile }) {
+  if (isMobile) {
+    return (
+      <header style={{
+        height: 56,
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(168,85,247,0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 16px',
+        flexShrink: 0,
+        zIndex: 70,
+      }}>
+        {/* ロゴ */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{
+            width: 26, height: 26, borderRadius: 7,
+            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 13, flexShrink: 0,
+          }}>✦</div>
+          <div style={{
+            fontSize: 17, fontWeight: 900,
+            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            letterSpacing: '-0.02em',
+          }}>Discoverino</div>
+        </div>
+
+        {/* 通知ベル */}
+        <button style={{
+          width: 38, height: 38, borderRadius: '50%',
+          border: '1.5px solid rgba(168,85,247,0.15)',
+          background: 'rgba(250,247,255,0.9)',
+          fontSize: 16, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'relative', flexShrink: 0,
+        }}>
+          🔔
+          <span style={{
+            position: 'absolute', top: 4, right: 4,
+            width: 8, height: 8, background: '#e91e63',
+            borderRadius: '50%', border: '1.5px solid white',
+          }} />
+        </button>
+      </header>
+    );
+  }
+
   return (
     <header
       style={{
