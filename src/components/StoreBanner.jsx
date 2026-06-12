@@ -3,7 +3,7 @@ import { stores } from '../data/stores';
 
 const DOUBLE_TAP_MS = 350;
 
-export function StoreBanner({ onEnterStore, isMobile }) {
+export function StoreBanner({ onEnterStore, onShowAllStores, isMobile }) {
   const scrollRef = useRef(null);
 
   return (
@@ -28,6 +28,7 @@ export function StoreBanner({ onEnterStore, isMobile }) {
           おすすめのストア
         </span>
         <span
+          onClick={onShowAllStores}
           style={{ fontSize: 11, color: '#a855f7', cursor: 'pointer', fontWeight: 600 }}
           onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
           onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}

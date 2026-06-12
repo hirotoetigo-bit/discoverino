@@ -9,6 +9,7 @@ import { StoreBanner } from './components/StoreBanner';
 import { DeliveryStory } from './components/DeliveryStory';
 import { Onboarding } from './components/Onboarding';
 import { useIsMobile } from './hooks/useIsMobile';
+import { AllStoresPage } from './components/AllStoresPage';
 
 const FONT_STACK = "'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', sans-serif";
 
@@ -23,6 +24,7 @@ export default function App() {
   });
 
   const [activePage, setActivePage] = useState('explore');
+  const [showAllStores, setShowAllStores] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [favorites, setFavorites] = useState(new Set());
   const [budget, setBudget] = useState(25000);
@@ -159,7 +161,11 @@ export default function App() {
                 isMobile={isMobile}
               />
               {activePage === 'explore' && !activeStoreFilter && (
-                <StoreBanner onEnterStore={handleEnterStore} isMobile={isMobile} />
+                <StoreBanner
+                  onEnterStore={handleEnterStore}
+                  onShowAllStores={() => setShowAllStores(true)}
+                  isMobile={isMobile}
+                />
               )}
             </div>
           ) : (
@@ -197,6 +203,17 @@ export default function App() {
           activePage={activePage}
           favoritesCount={favorites.size}
           onNavigate={handleNavigate}
+        />
+      )}
+
+      {showAllStores && (
+        <AllStoresPage
+          isMobile={isMobile}
+          onEnterStore={(store) => {
+            setShowAllStores(false);
+            handleEnterStore(store);
+          }}
+          onClose={() => setShowAllStores(false)}
         />
       )}
     </div>

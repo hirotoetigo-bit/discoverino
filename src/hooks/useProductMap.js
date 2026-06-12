@@ -51,6 +51,8 @@ export function useProductMap() {
     setScale(newScale);
   }, []);
 
+  const lastPinchCenter = useRef(null);
+
   const handleTouchStart = useCallback((e) => {
     if (e.touches.length === 1) {
       setIsDragging(true);
@@ -60,6 +62,11 @@ export function useProductMap() {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       lastTouchDist.current = Math.sqrt(dx * dx + dy * dy);
+      lastPinchCenter.current = {
+        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      };
+      setIsDragging(false);
     }
   }, [offset]);
 
@@ -74,7 +81,25 @@ export function useProductMap() {
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const factor = dist / lastTouchDist.current;
-      setScale((s) => clampScale(s * factor));
+
+      const pinchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const pinchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+      // コンテナの左上を基準にしたピンチ中心座標を取得
+      const container = e.currentTarget;
+      const rect = container.getBoundingClientRect();
+      const localX = pinchX - rect.left;
+      const localY = pinchY - rect.top;
+
+      const prevScale = scaleRef.current;
+      const newScale = clampScale(prevScale * factor);
+      const { x: ox, y: oy } = offsetRef.current;
+
+      setOffset({
+        x: localX - (localX - ox) * (newScale / prevScale),
+        y: localY - (localY - oy) * (newScale / prevScale),
+      });
+      setScale(newScale);
       lastTouchDist.current = dist;
     }
   }, [isDragging]);
