@@ -10,18 +10,20 @@ const CATEGORY_BG = {
   'ファッション': 'linear-gradient(160deg, #fff5f7 0%, #ffe4ec 100%)',
 };
 
-export function ProductCard({ product, isSelected, favorites, onSelect, onToggleFavorite, isFaded, showDetail }) {
+export function ProductCard({ product, isSelected, favorites, onSelect, onToggleFavorite, isFaded, showDetail, wasPinchRecently }) {
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const isFav = favorites.has(product.id);
 
   const handleClick = (e) => {
     e.stopPropagation();
+    if (wasPinchRecently?.()) return;
     onSelect(product);
   };
 
   const handleFav = (e) => {
     e.stopPropagation();
+    if (wasPinchRecently?.()) return;
     onToggleFavorite(product.id);
   };
 
@@ -41,6 +43,7 @@ export function ProductCard({ product, isSelected, favorites, onSelect, onToggle
         transition: 'transform 0.2s ease, box-shadow 0.2s, opacity 0.3s, filter 0.3s',
         cursor: 'pointer',
         userSelect: 'none',
+        touchAction: 'none',
         opacity: isFaded ? 0.25 : 1,
         filter: isFaded ? 'grayscale(0.85)' : 'none',
         zIndex: isSelected ? 10 : hovered ? 5 : 1,
@@ -155,7 +158,7 @@ export function ProductCard({ product, isSelected, favorites, onSelect, onToggle
               marginBottom: showDetail ? 8 : 0,
             }}
           >
-            ¥{product.price.toLocaleString()}
+            {product.price != null ? `¥${product.price.toLocaleString()}` : 'Amazon'}
           </div>
 
           {/* ストアタグ */}

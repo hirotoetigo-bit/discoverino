@@ -55,7 +55,7 @@ export function ProductMap({
     offset, scale, isDragging,
     handleMouseDown, handleMouseMove, handleMouseUp,
     handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd,
-    handleSliderZoom,
+    handleSliderZoom, wasPinchRecently,
     SCALE_MIN, SCALE_MAX,
   } = useProductMap();
 
@@ -125,6 +125,7 @@ export function ProductMap({
       const matchTag = (product.tags || []).some((t) => t.toLowerCase().includes(q));
       if (!matchName && !matchCat && !matchTag) return true;
     }
+    if (product.price == null) return false; // Amazon商品は予算フィルター対象外
     return product.price > budget;
   };
 
@@ -136,6 +137,7 @@ export function ProductMap({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onClick={(e) => {
+        if (wasPinchRecently()) return;
         if (e.target === containerRef.current) {
           onSelectProduct(null);
           onSelectStore(null);
@@ -264,6 +266,7 @@ export function ProductMap({
                 onSelect={onSelectStore}
                 onEnter={onEnterStore}
                 onToggleFavorite={onToggleStoreFavorite}
+                wasPinchRecently={wasPinchRecently}
               />
             ))
           : products.map((product) => (
@@ -276,6 +279,7 @@ export function ProductMap({
                 onToggleFavorite={onToggleFavorite}
                 isFaded={isProductFaded(product)}
                 showDetail={isDetailMode}
+                wasPinchRecently={wasPinchRecently}
               />
             ))
         }

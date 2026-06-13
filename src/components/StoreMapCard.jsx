@@ -2,19 +2,18 @@ import { useState, useRef } from 'react';
 
 const DOUBLE_TAP_MS = 350;
 
-export function StoreMapCard({ store, isSelected, isFavorite, onSelect, onEnter, onToggleFavorite }) {
+export function StoreMapCard({ store, isSelected, isFavorite, onSelect, onEnter, onToggleFavorite, wasPinchRecently }) {
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const lastClickTime = useRef(0);
 
   const handleClick = (e) => {
     e.stopPropagation();
+    if (wasPinchRecently?.()) return;
     const now = Date.now();
     if (now - lastClickTime.current < DOUBLE_TAP_MS) {
-      // ダブルタップ → 入店
       onEnter(store);
     } else {
-      // シングルタップ → 詳細パネル
       onSelect(store);
     }
     lastClickTime.current = now;
@@ -22,6 +21,7 @@ export function StoreMapCard({ store, isSelected, isFavorite, onSelect, onEnter,
 
   const handleFav = (e) => {
     e.stopPropagation();
+    if (wasPinchRecently?.()) return;
     onToggleFavorite(store.id);
   };
 
@@ -39,6 +39,7 @@ export function StoreMapCard({ store, isSelected, isFavorite, onSelect, onEnter,
         transition: 'transform 0.22s ease, box-shadow 0.2s',
         cursor: 'pointer',
         userSelect: 'none',
+        touchAction: 'none',
         zIndex: isSelected ? 10 : hovered ? 5 : 1,
       }}
     >

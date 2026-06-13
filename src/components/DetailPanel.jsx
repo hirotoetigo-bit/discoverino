@@ -181,34 +181,76 @@ export function DetailPanel({ product, favorites, userInterests, onToggleFavorit
           {product.name}
         </h2>
         <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6, display: 'flex', alignItems: 'baseline', gap: 4 }}>
-          <span style={{ color: '#1a1a2e' }}>¥{product.price.toLocaleString()}</span>
-          <span style={{ fontSize: 11, color: '#aaa', fontWeight: 400 }}>（税込）</span>
+          {product.price != null ? (
+            <>
+              <span style={{ color: '#1a1a2e' }}>¥{product.price.toLocaleString()}</span>
+              <span style={{ fontSize: 11, color: '#aaa', fontWeight: 400 }}>（税込）</span>
+            </>
+          ) : (
+            <span style={{ fontSize: 15, color: '#FF9900', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 18 }}>🛒</span> Amazonで確認
+            </span>
+          )}
         </div>
         <p style={{ fontSize: 12.5, color: '#777', lineHeight: 1.7, margin: '0 0 16px' }}>
           {product.description}
         </p>
 
-        {/* 詳しく見るボタン */}
-        <button
-          style={{
-            width: '100%',
-            padding: '13px',
-            background: '#1a1a2e',
-            border: 'none',
-            borderRadius: 13,
-            color: '#fff',
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            marginBottom: 8,
-            transition: 'opacity 0.15s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-        >
-          詳しく見る
-        </button>
+        {/* 購入ボタン */}
+        {product.affiliateUrl ? (
+          <a
+            href={product.affiliateUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              width: '100%',
+              padding: '13px',
+              background: 'linear-gradient(135deg, #FF9900, #FF6600)',
+              border: 'none',
+              borderRadius: 13,
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginBottom: 8,
+              textDecoration: 'none',
+              boxSizing: 'border-box',
+              boxShadow: '0 4px 16px rgba(255,153,0,0.4)',
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+          >
+            <span style={{ fontSize: 18 }}>🛒</span>
+            Amazonで購入する
+          </a>
+        ) : (
+          <button
+            style={{
+              width: '100%',
+              padding: '13px',
+              background: '#1a1a2e',
+              border: 'none',
+              borderRadius: 13,
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginBottom: 8,
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+          >
+            詳しく見る
+          </button>
+        )}
 
         {/* この商品を見たストアを見るボタン */}
         {store && (

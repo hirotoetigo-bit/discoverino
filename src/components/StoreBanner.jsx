@@ -3,7 +3,7 @@ import { stores } from '../data/stores';
 
 const DOUBLE_TAP_MS = 350;
 
-export function StoreBanner({ onEnterStore, onShowAllStores, isMobile }) {
+export function StoreBanner({ onEnterStore, onSelectStore, onShowAllStores, isMobile }) {
   const scrollRef = useRef(null);
 
   return (
@@ -48,20 +48,29 @@ export function StoreBanner({ onEnterStore, onShowAllStores, isMobile }) {
         }}
       >
         {stores.map((store) => (
-          <StoreCard key={store.id} store={store} onEnterStore={onEnterStore} />
+          <StoreCard
+            key={store.id}
+            store={store}
+            onEnterStore={onEnterStore}
+            onSelectStore={onSelectStore}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function StoreCard({ store, onEnterStore }) {
+function StoreCard({ store, onEnterStore, onSelectStore }) {
   const lastClickTime = useRef(0);
 
   const handleClick = () => {
     const now = Date.now();
     if (now - lastClickTime.current < DOUBLE_TAP_MS) {
+      // ダブルタップ → 入店
       onEnterStore?.(store);
+    } else {
+      // シングルタップ → 詳細表示
+      onSelectStore?.(store);
     }
     lastClickTime.current = now;
   };
@@ -94,12 +103,7 @@ function StoreCard({ store, onEnterStore }) {
           <img
             src={store.bgImage}
             alt={store.name}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             onError={(e) => {
               e.target.parentElement.style.background = store.gradient;
               e.target.style.display = 'none';
@@ -110,26 +114,16 @@ function StoreCard({ store, onEnterStore }) {
         )}
 
         {/* 暗いオーバーレイ */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
-          }}
-        />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
+        }} />
 
-        {/* ブランド名・ボタン */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 8,
-            left: 10,
-            right: 10,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-          }}
-        >
+        {/* ブランド名・入店ボタン */}
+        <div style={{
+          position: 'absolute', bottom: 8, left: 10, right: 10,
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+        }}>
           <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
             {store.name}
           </div>
@@ -138,39 +132,14 @@ function StoreCard({ store, onEnterStore }) {
             style={{
               padding: '4px 10px',
               background: 'rgba(255,255,255,0.92)',
-              border: 'none',
-              borderRadius: 20,
-              color: '#333',
-              fontSize: 10,
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              backdropFilter: 'blur(4px)',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
+              border: 'none', borderRadius: 20,
+              color: '#333', fontSize: 10, fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'inherit',
+              backdropFilter: 'blur(4px)', whiteSpace: 'nowrap', flexShrink: 0,
             }}
           >
             入店する
           </button>
-        </div>
-
-        {/* ダブルタップヒント */}
-        <div style={{
-          position: 'absolute',
-          top: 6,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,0.55)',
-          backdropFilter: 'blur(4px)',
-          borderRadius: 20,
-          padding: '2px 8px',
-          fontSize: 8.5,
-          color: '#fff',
-          fontWeight: 600,
-          whiteSpace: 'nowrap',
-          pointerEvents: 'none',
-        }}>
-          ダブルタップで入店
         </div>
       </div>
     </div>

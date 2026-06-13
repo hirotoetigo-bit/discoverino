@@ -163,6 +163,7 @@ export default function App() {
               {activePage === 'explore' && !activeStoreFilter && (
                 <StoreBanner
                   onEnterStore={handleEnterStore}
+                  onSelectStore={handleSelectStore}
                   onShowAllStores={() => setShowAllStores(true)}
                   isMobile={isMobile}
                 />
@@ -185,7 +186,7 @@ export default function App() {
           )}
 
           {/* 店舗詳細パネル */}
-          {selectedStore && activePage === 'store' && (
+          {selectedStore && (activePage === 'store' || activePage === 'explore') && (
             <StoreDetailPanel
               store={selectedStore}
               isFavorite={storeFavorites.has(selectedStore.id)}
